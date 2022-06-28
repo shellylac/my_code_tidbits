@@ -1,3 +1,14 @@
+#---
+# Copy files from local drive to remote server and vice versa (scp)
+#	This should copy from a remote server to a local directory
+scp remote_username@10.10.0.2:/remote/file.txt /local/directory
+#	Example: scp bbdatan@bba:/user/bbdatan/Practice/New_File_1.txt  J:\Admin
+
+# This code run from the command line copies file/s from local to remote server
+scp file.txt remote_username@10.10.0.2:/remote/directory
+#	IGNORE THE WARNING and Click “YES” when it asks if you want to continue
+#	Then enter the password for that particular server
+
 #----
 # Find and Remove files by name 
 find directory/ -type f -name '*_name_*.txt' -exec rm -f {} \;
