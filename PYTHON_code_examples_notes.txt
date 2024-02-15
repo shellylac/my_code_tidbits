@@ -1,0 +1,109 @@
+# Pandas filtering and selecting
+apple_employees = df.loc['Apple']['Employees']
+df_low_employees = df.loc[df['Employees'] < apple_employees]
+df_low_employees.head()
+
+# note brackets after mean()
+df_high_revenue = df.loc[df['Revenue'] > df['Revenue'].mean()]
+
+# ~ operator and != equivalency
+df.loc[(df['Revenue'] > df['Revenue'].mean()) & ~(df['Country'] == 'USA')]
+df.loc[(df['Revenue'] > df['Revenue'].mean()) & (df['Country'] != 'USA')]
+
+# boolean operators used in pandas are the symbols: &, | and ~, their precedence doesn't work as expected with boolean expressions
+That's why we MUST ALWAYS surround the expressions in parentheses.
+
+# Query method for pandas
+df.query("Country != 'USA' and Sector == 'Consumer Electronics'")
+df.query("`Founding Date` == '04-02-2004'")
+
+#Referencing external variables:
+mean_revenue = df['Revenue'].mean()
+df.query("Revenue > @mean_revenue")
+median_rev_per_employee = df['Revenue per Employee'].median()
+df.query("`Revenue per Employee` > @median_rev_per_employee")
+
+#Complex expressions in `.loc`
+# Can call "calculation" code within .loc()
+df.loc[
+    (df['Revenue'] / df['Employees']) > 1
+]
+
+#pd read_csv warning 
+#DtypeWarning: Columns (25,108) have mixed types. Specify dtype option on import or set low_memory=False.
+#Can be fixed like so (specifying col numbers with the problems)
+df = pd.read_csv('players_22.csv',dtype={25: str, 108: str})
+
+# print all columns
+df.columns
+print(df.columns.tolist())
+
+# Same column selection using .iloc() and .loc()
+df_order_cols = df.iloc[:, [3,6,4,1]]
+df_order_cols = df.loc[:, [df.columns[3], df.columns[6], df.columns[4], df.columns[1]]]
+
+
+#show the number of cells in the dataframe
+print("dataset size: ", df.size)
+
+#show the number of records (rows) in the dataframe
+print("number of talks: ", len(df))
+
+#show the number of features (columns) in the dataframe
+print("number of features: ", len(df.columns)) 
+
+#show the number of null values in each column with non-zero null values
+nulls = df.isnull().sum()
+nulls[nulls > 0]
+
+# Create a new DataFrame with only the duplicate rows
+#sum(df.duplicated())
+duplicate_rows = df[df.duplicated()]
+print("Number of duplicate rows: ", duplicate_rows.size)
+
+# Groupby and filters - 
+# NEED .reset_index() - otherwise the index will be the values of the first column (and speaker_occupation wont be a column name in index) 
+
+occupation_df = df[df['speaker_occupation']!= 'Unknown'].groupby('speaker_occupation').count().reset_index()[['speaker_occupation', 'view_count']]
+occupation_df.columns = ['occupation', 'appearances']
+occupation_df = occupation_df.sort_values('appearances', ascending=False)
+occupation_df
+
+# Using in the df.isin() method
+df_medium_science_tech = df.loc[(df['view_count'] > 1000000) & (df['view_count'] < 2000000) &
+                                    (df['published_date'] > '2019-01-01') & 
+                                    (df['theme'].isin(['Science', 'Technology']))]
+
+# Filter to get the max (or min) of a value in a column
+highest_view_talk_speaker = df_below_8m_talks.loc[df_below_8m_talks['view_count'].idxmax()].speaker_name
+
+# Use df.query() with .isin()
+id_list = ["a", "b"]
+df.query('a in @id_list')
+df.query('a in ["a", "b", "c"]')
+
+# How to add a new row to a DF
+# create a new row
+new_row = {'Full Name': 'Emma', 'Years Old': 28, 'Gender': 'F', 'Status': 'Student'}
+
+# Add the new row to the DataFrame
+df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+
+#Alt method - add new row - when DF has numeric index
+df.loc[len(df)] = new_row
+
+# two way to filter on mlutiple conditions
+Filter_Data = df.loc[(df['Gender'] == 'F') &
+      (df['Status'] == 'Student') &
+      (df['Years Old'] > 20)]
+
+Filter_Data2 = df.query("Gender == 'F' & Status == 'Student' & `Years Old` > 20")
+Filter_Data2.shape
+
+#Plot a dataframe
+df.sort_values('Years Old', inplace = True)
+#df.shape
+df.plot(x='Full Name', y='Years Old', kind='scatter', rot = 90)
+
+#Plot counts in one column
+df.groupby('Gender').size().plot(kind='bar')
